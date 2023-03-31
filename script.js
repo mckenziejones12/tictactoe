@@ -1,5 +1,5 @@
-// Gameboard object (module pattern)
-const Gameboard = (() => {
+// Game Flow object (module pattern)
+const GameFlow = (() => {
   const gameState = {
     xTurn: true,
     xState: [],
@@ -19,6 +19,50 @@ const Gameboard = (() => {
     ],
   };
 
+  const restart = () => {
+    gameState.xTurn = true;
+    gameState.xState = [];
+    gameState.oState = [];
+    const cells = document.getElementsByClassName("cell");
+    for (let i = 0; i < cells.length; i++) {
+      cells[i].classList.remove("x");
+      cells[i].classList.remove("o");
+    }
+  };
+
+  const init = () => {
+    const restartBtn = document.getElementById("restartBtn");
+    restartBtn.addEventListener("click", restart);
+  };
+
+  const checkWinner = () => {
+    gameState.winningStates.forEach((winningState) => {
+      const xWins = winningState.every((state) =>
+        gameState.xState.includes(state)
+      );
+      const oWins = winningState.every((state) =>
+        gameState.oState.includes(state)
+      );
+
+      // If someone has won
+      if (xWins || oWins) {
+        console.log("We have a winner!");
+        const winnerText = document.getElementById("winnerText");
+        winnerText.textContent = xWins
+          ? "Player 1 has won!"
+          : "Player 2 has won!";
+      }
+    });
+  };
+  return {
+    init,
+    gameState,
+    checkWinner,
+  };
+})();
+
+// Gameboard object (module pattern)
+const Gameboard = (() => {
   const board = Array(3)
     .fill()
     .map(() => Array(3).fill(""));
@@ -45,27 +89,6 @@ const Gameboard = (() => {
       }
     }
   };
-
-  const checkWinner = () => {
-    gameState.winningStates.forEach((winningState) => {
-      const xWins = winningState.every((state) =>
-        gameState.xState.includes(state)
-      );
-      const oWins = winningState.every((state) =>
-        gameState.oState.includes(state)
-      );
-
-      // If someone has won
-      if (xWins || oWins) {
-        console.log("We have a winner!");
-        const paragraph = document.createElement("p");
-        paragraph.textContent = xWins ? "X has won!" : "O has won!";
-        paragraph.style.color = "red";
-        document.getElementById("header").append(paragraph);
-      }
-    });
-  };
-
   const addMark = (e) => {
     const cell = e.target;
     const cellValue = cell.getAttribute("data-value");
@@ -75,22 +98,20 @@ const Gameboard = (() => {
       return;
     }
 
-    if (gameState.xTurn === true) {
+    if (GameFlow.gameState.xTurn === true) {
       cell.classList.add("x");
-      gameState.xState.push(cellValue);
+      GameFlow.gameState.xState.push(cellValue);
     } else {
       cell.classList.add("o");
-      gameState.oState.push(cellValue);
+      GameFlow.gameState.oState.push(cellValue);
     }
+    GameFlow.gameState.xTurn = !GameFlow.gameState.xTurn;
 
-    gameState.xTurn = !gameState.xTurn;
-
-    // Check for a winner after every play
-    checkWinner();
+    // Check winner through GameFlow
+    GameFlow.checkWinner();
   };
 
   return {
-    board,
     renderBoard,
   };
 })();
@@ -98,8 +119,9 @@ const Gameboard = (() => {
 // Player object (factory function)
 const Player = () => {};
 
-// Game Flow object (module pattern)
-const gameFlow = (() => {})();
-
+/* ~~~This is where my code runs~~~ */
 // Create the game
 Gameboard.renderBoard();
+
+// Add event listeners to clear button
+GameFlow.init();
