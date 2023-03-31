@@ -2,6 +2,7 @@
 const GameFlow = (() => {
   const gameState = {
     xTurn: true,
+    hasWon: false,
     xState: [],
     oState: [],
     winningStates: [
@@ -21,6 +22,7 @@ const GameFlow = (() => {
 
   const restart = () => {
     gameState.xTurn = true;
+    gameState.hasWon = false;
     gameState.xState = [];
     gameState.oState = [];
     const cells = document.getElementsByClassName("cell");
@@ -35,6 +37,15 @@ const GameFlow = (() => {
     restartBtn.addEventListener("click", restart);
   };
 
+  const checkFilled = () => {
+    const cells = document.getElementsByClassName("cell");
+    const cellsArray = [...cells];
+    const cellsFilled = cellsArray.every(
+      (cell) => cell.classList.contains("x") || cell.classList.contains("o")
+    );
+    return cellsFilled;
+  };
+
   const checkWinner = () => {
     gameState.winningStates.forEach((winningState) => {
       const xWins = winningState.every((state) =>
@@ -46,13 +57,19 @@ const GameFlow = (() => {
 
       // If someone has won
       if (xWins || oWins) {
-        console.log("We have a winner!");
-        const winnerText = document.getElementById("winnerText");
-        winnerText.textContent = xWins
+        gameState.hasWon = true;
+        const endGameText = document.getElementById("endGameText");
+        endGameText.textContent = xWins
           ? "Player 1 has won!"
           : "Player 2 has won!";
       }
     });
+
+    const isFilled = checkFilled();
+
+    if (isFilled && !gameState.hasWon) {
+      endGameText.textContent = "Its a tie game!";
+    }
   };
   return {
     init,
@@ -90,6 +107,11 @@ const Gameboard = (() => {
     }
   };
   const addMark = (e) => {
+    if (GameFlow.gameState.hasWon) {
+      console.log("There is already a winner");
+      return;
+    }
+
     const cell = e.target;
     const cellValue = cell.getAttribute("data-value");
 

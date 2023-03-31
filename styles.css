@@ -34,7 +34,8 @@
 .disabled {
   cursor: not-allowed;
 }
-#winnerText {
+
+#endGameText {
   color: blue;
   text-align: center;
   font-size: 24px;
